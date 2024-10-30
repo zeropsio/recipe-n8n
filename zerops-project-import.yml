@@ -25,5 +25,4 @@ services:
 
   - hostname: workers
     type: nodejs@22
-    enableSubdomainAccess: true
     buildFromGit: https://github.com/jansaidl/recipe-n8n
