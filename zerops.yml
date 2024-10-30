@@ -24,6 +24,8 @@ zerops:
         DB_POSTGRESDB_PASSWORD: "${db_password}"
         DB_POSTGRESDB_POOL_SIZE: 5
 
+        N8N_EDITOR_BASE_URL: $zeropsSubdomain
+
         N8N_LISTEN_ADDRESS: "::"
         N8N_PERSONALIZATION_ENABLED: false
         N8N_VERSION_NOTIFICATIONS_ENABLED: false
@@ -66,6 +68,8 @@ zerops:
         DB_POSTGRESDB_USER: "${db_user}"
         DB_POSTGRESDB_PASSWORD: "${db_password}"
         DB_POSTGRESDB_POOL_SIZE: 5
+
+        N8N_EDITOR_BASE_URL: $zeropsSubdomain
 
         N8N_ENCRYPTION_KEY: ${app_N8N_ENCRYPTION_KEY}
 
