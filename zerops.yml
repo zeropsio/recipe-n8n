@@ -1,0 +1,89 @@
+zerops:
+  - setup: app
+    build:
+      buildCommands:
+        - "echo noop"
+      deployFiles:
+        - README.md
+    run:
+      base: nodejs@18
+      ports:
+        - httpSupport: true
+          port: 5678
+      prepareCommands:
+        - zsc scale ram max 10m
+        - "export NODE_OPTIONS=--max-old-space-size=8192;  npm install -g n8n"
+      start: n8n
+      envVariables:
+        NODE_OPTIONS: --max-old-space-size=8192
+
+        DB_TYPE: "postgresdb"
+        DB_POSTGRESDB_DATABASE: "${db_dbName}"
+        DB_POSTGRESDB_HOST: "${db_hostname}"
+        DB_POSTGRESDB_USER: "${db_user}"
+        DB_POSTGRESDB_PASSWORD: "${db_password}"
+        DB_POSTGRESDB_POOL_SIZE: 5
+
+        N8N_LISTEN_ADDRESS: "::"
+        N8N_PERSONALIZATION_ENABLED: false
+        N8N_VERSION_NOTIFICATIONS_ENABLED: false
+        N8N_VERSION_NOTIFICATIONS_INFO_URL: false
+        N8N_HIRING_BANNER_ENABLED: false
+
+        N8N_AVAILABLE_BINARY_DATA_MODES: "filesystem,s3"
+        N8N_DEFAULT_BINARY_DATA_MODE: "s3"
+
+        N8N_EXTERNAL_STORAGE_S3_HOST: "storage-prg1.zerops.io"
+        N8N_EXTERNAL_STORAGE_S3_BUCKET_NAME: "$storage_bucketName"
+        N8N_EXTERNAL_STORAGE_S3_BUCKET_REGION: "us-east-1"
+        N8N_EXTERNAL_STORAGE_S3_ACCESS_KEY: "$storage_accessKeyId"
+        N8N_EXTERNAL_STORAGE_S3_ACCESS_SECRET: "$storage_secretAccessKey"
+
+        QUEUE_BULL_REDIS_HOST: "${redis_hostname}"
+        QUEUE_BULL_REDIS_DB: "0"
+        EXECUTIONS_MODE: "queue"
+  - setup: workers
+    build:
+      buildCommands:
+        - "echo noop"
+      deployFiles:
+        - README.md
+    run:
+      base: nodejs@18
+      ports:
+        - httpSupport: true
+          port: 5678
+      prepareCommands:
+        - zsc scale ram max 10m
+        - "export NODE_OPTIONS=--max-old-space-size=8192;  npm install -g n8n"
+      start: n8n worker
+      envVariables:
+        NODE_OPTIONS: --max-old-space-size=8192
+
+        DB_TYPE: "postgresdb"
+        DB_POSTGRESDB_DATABASE: "${db_dbName}"
+        DB_POSTGRESDB_HOST: "${db_hostname}"
+        DB_POSTGRESDB_USER: "${db_user}"
+        DB_POSTGRESDB_PASSWORD: "${db_password}"
+        DB_POSTGRESDB_POOL_SIZE: 5
+
+        N8N_ENCRYPTION_KEY: ${app_N8N_ENCRYPTION_KEY}
+
+        N8N_LISTEN_ADDRESS: "::"
+        N8N_PERSONALIZATION_ENABLED: false
+        N8N_VERSION_NOTIFICATIONS_ENABLED: false
+        N8N_VERSION_NOTIFICATIONS_INFO_URL: false
+        N8N_HIRING_BANNER_ENABLED: false
+
+        N8N_AVAILABLE_BINARY_DATA_MODES: "filesystem,s3"
+        N8N_DEFAULT_BINARY_DATA_MODE: "s3"
+
+        N8N_EXTERNAL_STORAGE_S3_HOST: "storage-prg1.zerops.io"
+        N8N_EXTERNAL_STORAGE_S3_BUCKET_NAME: "$storage_bucketName"
+        N8N_EXTERNAL_STORAGE_S3_BUCKET_REGION: "us-east-1"
+        N8N_EXTERNAL_STORAGE_S3_ACCESS_KEY: "$storage_accessKeyId"
+        N8N_EXTERNAL_STORAGE_S3_ACCESS_SECRET: "$storage_secretAccessKey"
+
+        QUEUE_BULL_REDIS_HOST: "${redis_hostname}"
+        QUEUE_BULL_REDIS_DB: "0"
+        EXECUTIONS_MODE: "queue"

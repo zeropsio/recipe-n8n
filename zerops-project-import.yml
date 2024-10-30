@@ -1,0 +1,26 @@
+
+project:
+  name: recipe-n8n
+  tags:
+    - zerops-recipe
+
+services:
+  - hostname: redis
+    type: valkey@7.2
+
+  - hostname: db
+    type: postgresql@16
+
+  - hostname: storage
+    type: object-storage
+
+  - hostname: app
+    type: nodejs@22
+    enableSubdomainAccess: true
+    buildFromGit: https://github.com/jansaidl/recipe-n8n
+    envSecrets:
+      N8N_ENCRYPTION_KEY: <@generateRandomString(<32>) | toHex>
+  - hostname: workers
+    type: nodejs@22
+    enableSubdomainAccess: true
+    buildFromGit: https://github.com/jansaidl/recipe-n8n
