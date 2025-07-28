@@ -1,55 +1,41 @@
 zerops:
   - setup: app
-    build:
-      buildCommands:
-        - "echo noop"
-      deployFiles:
-        - README.md
-    run:
-      base: nodejs@18
-      ports:
-        - httpSupport: true
+    extends: n8nbasics
+    deploy:
+      readinessCheck:
+        httpGet:
           port: 5678
-      prepareCommands:
-        - zsc scale ram max 10m
-        - "export NODE_OPTIONS=--max-old-space-size=8192;  npm install -g n8n"
+          path: /healthz/readiness
+          host: localhost
+        failureTimeout: 600s
+        retryPeriod: 20s
+    run:
       start: n8n
-      envVariables:
-        NODE_OPTIONS: --max-old-space-size=8192
+      healthCheck:
+        httpGet:
+          port: 5678
+          path: /healthz
+          host: localhost
 
-        DB_TYPE: "postgresdb"
-        DB_POSTGRESDB_DATABASE: "${db_dbName}"
-        DB_POSTGRESDB_HOST: "${db_hostname}"
-        DB_POSTGRESDB_USER: "${db_user}"
-        DB_POSTGRESDB_PASSWORD: "${db_password}"
-        DB_POSTGRESDB_POOL_SIZE: 5
-
-        N8N_EDITOR_BASE_URL: $zeropsSubdomain
-
-        N8N_LISTEN_ADDRESS: "::"
-        N8N_PERSONALIZATION_ENABLED: false
-        N8N_VERSION_NOTIFICATIONS_ENABLED: false
-        N8N_VERSION_NOTIFICATIONS_INFO_URL: false
-        N8N_HIRING_BANNER_ENABLED: false
-
-        N8N_AVAILABLE_BINARY_DATA_MODES: "filesystem,s3"
-        N8N_DEFAULT_BINARY_DATA_MODE: "s3"
-
-        N8N_EXTERNAL_STORAGE_S3_HOST: "storage-prg1.zerops.io"
-        N8N_EXTERNAL_STORAGE_S3_BUCKET_NAME: "$storage_bucketName"
-        N8N_EXTERNAL_STORAGE_S3_BUCKET_REGION: "us-east-1"
-        N8N_EXTERNAL_STORAGE_S3_ACCESS_KEY: "$storage_accessKeyId"
-        N8N_EXTERNAL_STORAGE_S3_ACCESS_SECRET: "$storage_secretAccessKey"
-
-        QUEUE_BULL_REDIS_HOST: "${redis_hostname}"
-        QUEUE_BULL_REDIS_DB: "0"
-        EXECUTIONS_MODE: "queue"
   - setup: workers
-    build:
-      buildCommands:
-        - "echo noop"
-      deployFiles:
-        - README.md
+    extends: n8nbasics
+    deploy:
+      readinessCheck:
+        httpGet:
+          port: 5680
+          path: /healthz/readiness
+          host: localhost
+        failureTimeout: 600s
+        retryPeriod: 20s
+    run:
+      start: n8n worker
+      healthCheck:
+        httpGet:
+          port: 5680
+          path: /healthz
+          host: localhost
+
+  - setup: n8nbasics
     run:
       base: nodejs@18
       ports:
@@ -58,9 +44,11 @@ zerops:
       prepareCommands:
         - zsc scale ram max 10m
         - "export NODE_OPTIONS=--max-old-space-size=8192;  npm install -g n8n"
-      start: n8n worker
       envVariables:
         NODE_OPTIONS: --max-old-space-size=8192
+
+        VUE_APP_URL_BASE_API: "${zeropsSubdomain}"
+        N8N_EDITOR_BASE_URL: "${zeropsSubdomain}"
 
         DB_TYPE: "postgresdb"
         DB_POSTGRESDB_DATABASE: "${db_dbName}"
@@ -69,25 +57,52 @@ zerops:
         DB_POSTGRESDB_PASSWORD: "${db_password}"
         DB_POSTGRESDB_POOL_SIZE: 5
 
-        N8N_EDITOR_BASE_URL: $zeropsSubdomain
 
-        N8N_ENCRYPTION_KEY: ${app_N8N_ENCRYPTION_KEY}
+        N8N_ENCRYPTION_KEY: "${app_encryption_key}"
+        N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: true
+        N8N_RUNNERS_ENABLED: true
+        OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS: true
 
+        N8N_PORT: 5678
         N8N_LISTEN_ADDRESS: "::"
         N8N_PERSONALIZATION_ENABLED: false
-        N8N_VERSION_NOTIFICATIONS_ENABLED: false
         N8N_VERSION_NOTIFICATIONS_INFO_URL: false
         N8N_HIRING_BANNER_ENABLED: false
+        N8N_DIAGNOSTICS_ENABLED: false
+        N8N_VERSION_NOTIFICATIONS_ENABLED: false
+        N8N_TEMPLATES_ENABLED: false
 
+        # N8N_AVAILABLE_BINARY_DATA_MODES: "filesystem,s3"
         N8N_AVAILABLE_BINARY_DATA_MODES: "filesystem,s3"
-        N8N_DEFAULT_BINARY_DATA_MODE: "s3"
+        N8N_DEFAULT_BINARY_DATA_MODE: "filesystem"
 
-        N8N_EXTERNAL_STORAGE_S3_HOST: "storage-prg1.zerops.io"
-        N8N_EXTERNAL_STORAGE_S3_BUCKET_NAME: "$storage_bucketName"
+        N8N_REINSTALL_MISSING_PACKAGES: true
+
+        N8N_EXTERNAL_STORAGE_S3_HOST: "${storage_apiHost}"
+        N8N_EXTERNAL_STORAGE_S3_BUCKET_NAME: "${storage_bucketName}"
         N8N_EXTERNAL_STORAGE_S3_BUCKET_REGION: "us-east-1"
-        N8N_EXTERNAL_STORAGE_S3_ACCESS_KEY: "$storage_accessKeyId"
-        N8N_EXTERNAL_STORAGE_S3_ACCESS_SECRET: "$storage_secretAccessKey"
+        N8N_EXTERNAL_STORAGE_S3_ACCESS_KEY: "${storage_accessKeyId}"
+        N8N_EXTERNAL_STORAGE_S3_ACCESS_SECRET: "${storage_secretAccessKey}"
 
-        QUEUE_BULL_REDIS_HOST: "${redis_hostname}"
+        # Sets a default timeout (in seconds) to all workflows after which n8n stops their execution. Users can override this for individual workflows up to the duration set in EXECUTIONS_TIMEOUT_MAX. Set EXECUTIONS_TIMEOUT to -1 to disable.
+        EXECUTIONS_TIMEOUT: "3600"
+        # The maximum execution time (in seconds) that users can set for an individual workflow.
+        EXECUTIONS_TIMEOUT_MAX: "7200"
+
+        N8N_METRICS: true
+        QUEUE_HEALTH_CHECK_ACTIVE: true
+        QUEUE_HEALTH_CHECK_PORT: 5680
+
+        QUEUE_BULL_REDIS_HOST: "${valkey_hostname}"
         QUEUE_BULL_REDIS_DB: "0"
         EXECUTIONS_MODE: "queue"
+
+
+        N8N_EMAIL_MODE: smtp
+        # N8N_SMTP_PORT: 587
+        N8N_SMTP_PORT: 25
+        N8N_SMTP_HOST: mailpit
+        N8N_SMTP_USER: ""
+        N8N_SMTP_PASS: ""
+        N8N_SMTP_SENDER: "example@example.com"
+

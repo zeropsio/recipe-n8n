@@ -1,28 +1,43 @@
+#yamlPreprocessor=on
 project:
   name: recipe-n8n
   tags:
     - zerops-recipe
 
 services:
-  - hostname: redis
+  - hostname: valkey
+    priority: 10
     type: valkey@7.2
     mode: NON_HA
 
+
   - hostname: db
+    priority: 10
     type: postgresql@16
     mode: NON_HA
 
   - hostname: storage
+    priority: 10
     type: object-storage
     objectStorageSize: 5
+
+  - hostname: mailpit
+    priority: 10
+    type: alpine@3.20
+    buildFromGit: https://github.com/zeropsio/recipe-mailpit
+    enableSubdomainAccess: true
 
   - hostname: app
     type: nodejs@22
     enableSubdomainAccess: true
-    buildFromGit: https://github.com/jansaidl/recipe-n8n
+    buildFromGit: https://github.com/zeropsio/recipe-n8n
+    maxContainers: 1
+    minContainers: 1
     envSecrets:
-      N8N_ENCRYPTION_KEY: <@generateRandomString(<32>) | toHex>
+      encryption_key: <@generateRandomString(<32>) | toHex>
 
   - hostname: workers
     type: nodejs@22
-    buildFromGit: https://github.com/jansaidl/recipe-n8n
+    maxContainers: 3
+    minContainers: 3
+    buildFromGit: https://github.com/zeropsio/recipe-n8n
