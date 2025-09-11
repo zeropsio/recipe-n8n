@@ -37,7 +37,7 @@ zerops:
 
   - setup: n8nbasics
     run:
-      base: nodejs@20
+      base: nodejs@22
       ports:
         - httpSupport: true
           port: 5678
