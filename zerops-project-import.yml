@@ -20,15 +20,14 @@ services:
 
   - hostname: main
     type: nodejs@22
-    enableSubdomainAccess: true
     buildFromGit: https://github.com/zeropsio/recipe-n8n@matej
-    maxContainers: 1
-    minContainers: 1
+    enableSubdomainAccess: true
     envSecrets:
       ENCRYPTION_KEY: <@generateRandomString(<32>) | toHex>
+    maxContainers: 1
 
   - hostname: workers
     type: nodejs@22
+    buildFromGit: https://github.com/zeropsio/recipe-n8n@matej
     minContainers: 3
     maxContainers: 3
-    buildFromGit: https://github.com/zeropsio/recipe-n8n
