@@ -9,10 +9,6 @@
 ## Deploy on Zerops
 You can either click the deploy button to deploy directly on Zerops, or manually copy the [import yaml](https://github.com/zeropsio/recipe-n8n/blob/main/zerops-project-import.yml) to the import dialog in the Zerops app.
 
-[![Deploy on Zerops](https://github.com/zeropsio/recipe-shared-assets/blob/main/deploy-button/green/deploy-button.svg)](https://app.zerops.io/recipe/n8n)
-
-<br/>
-
 ## Recipe features
 
 - n8n running on **Zerops Node.js** service with auto-scaling
