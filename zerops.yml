@@ -43,7 +43,7 @@ zerops:
           port: 5678
       prepareCommands:
         - zsc scale ram max 10m
-        - "export NODE_OPTIONS=--max-old-space-size=8192;  npm install -g n8n@1.109.0"
+        - "export NODE_OPTIONS=--max-old-space-size=8192;  npm install -g n8n@1.122.5"
       envVariables:
         NODE_OPTIONS: --max-old-space-size=8192
 
